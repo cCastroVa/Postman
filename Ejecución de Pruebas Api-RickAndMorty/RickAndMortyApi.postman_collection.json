@@ -1,0 +1,276 @@
+{
+	"info": {
+		"_postman_id": "cb889fd8-2cb4-4286-9ff1-116159a3fc90",
+		"name": "RickAndMortyApi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23476973"
+	},
+	"item": [
+		{
+			"name": "Obtener todos los personajes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response=pm.response.json();\r",
+							"var idRickObtenido=response.results.find(x => x.id == 1)\r",
+							"pm.environment.set(\"IdRick\", idRickObtenido.id);\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el total de paginas de la consulta\", function(){\r",
+							"    var response=pm.response.json();\r",
+							"    var paginas=response.info.pages\r",
+							"    pm.environment.set(\"totalPaginas\", paginas);\r",
+							"    pm.expect(paginas).to.eql(42);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el total de personajes de la consulta\", function(){\r",
+							"    var response=pm.response.json();\r",
+							"    var resultadoTotal=response.info.count\r",
+							"    pm.environment.set(\"totalPersonajes\", resultadoTotal);\r",
+							"    pm.expect(resultadoTotal).to.eql(826);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id del personaje Rick\", function(){\r",
+							"    pm.expect(idRickObtenido.id).to.eql(1);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre del personaje Rick\", function(){\r",
+							"    pm.expect(idRickObtenido.name).to.eql(\"Rick Sanchez\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra la especie del personaje Rick\", function(){\r",
+							"    pm.expect(idRickObtenido.species).to.eql(\"Human\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el genero del personaje Rick\", function(){\r",
+							"    pm.expect(idRickObtenido.gender).to.eql(\"Male\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el origen del personaje Rick\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"Earth (C-137)\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Busqueda por pagina",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response=pm.response.json();\r",
+							"var idMortyObtenido=response.results.find(x => x.id == 2)\r",
+							"pm.environment.set(\"IdMorty\", idMortyObtenido.id);\r",
+							"\r",
+							"var response=pm.response.json();\r",
+							"var pagina=response.info.next\r",
+							"pm.environment.set(\"paginaSiguiente\", pagina);\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La pagina siguiente es la #2\", function(){\r",
+							"    pm.expect(pagina).to.contain(\"https://rickandmortyapi.com/api/character?page=2\")\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id del personaje Morty\", function(){\r",
+							"    pm.expect(idMortyObtenido.id).to.eql(2);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre del personaje Morty\", function(){\r",
+							"    pm.expect(idMortyObtenido.name).to.eql(\"Morty Smith\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra la especie del personaje Morty\", function(){\r",
+							"    pm.expect(idMortyObtenido.species).to.eql(\"Human\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el genero del personaje Morty\", function(){\r",
+							"    pm.expect(idMortyObtenido.gender).to.eql(\"Male\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el origen del personaje Morty\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"Earth (C-137)\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}?page=1",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener personaje por Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"la respuesta contiene datos\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre del personaje\", function(){\r",
+							"    var jasonDate=pm.response.json();\r",
+							"    pm.expect(jasonDate.name).to.eql(\"Rick Sanchez\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el estado del personaje\", function(){\r",
+							"    var jasonDate=pm.response.json();\r",
+							"    pm.expect(jasonDate.status).to.eql(\"Alive\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra la especie del personaje\", function(){\r",
+							"    var jasonDate=pm.response.json();\r",
+							"    pm.expect(jasonDate.species).to.eql(\"Human\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el tipo de personaje\", function(){\r",
+							"    var jasonDate=pm.response.json();\r",
+							"    pm.expect(jasonDate.type).to.eql(\"\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el género del personaje\", function(){\r",
+							"    var jasonDate=pm.response.json();\r",
+							"    pm.expect(jasonDate.gender).to.eql(\"Male\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}/{{IdRick}}",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					],
+					"path": [
+						"{{IdRick}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar multiples id´s que no existen",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"el cuerpo de la respuesta contiene un array vacio\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"    pm.expect(pm.response.text()).to.include([]);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}/900,827",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					],
+					"path": [
+						"900,827"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener multiples personajes por Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"La respuesta contiene datos\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre de los personajes\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"name\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el estado de los personajes\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"status\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra las especie de los personajes\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"species\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el tipo de cada personaje\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"type\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra los géneros de los personajes\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"gender\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}/{{IdRick}},{{IdMorty}}",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					],
+					"path": [
+						"{{IdRick}},{{IdMorty}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

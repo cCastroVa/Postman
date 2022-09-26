@@ -1,0 +1,418 @@
+{
+	"info": {
+		"_postman_id": "0480df42-718f-4435-8203-ac9c98008ce0",
+		"name": "LibrosApi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23476973"
+	},
+	"item": [
+		{
+			"name": "Obtener todos los libros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra la cantidad de libros\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.length).to.eql(6);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre del libro Untamed\", function(){\r",
+							"    var response=pm.response.json();\r",
+							"    var nombreLibro=response.find(x => x.name == \"Untamed\")\r",
+							"    pm.expect(nombreLibro.name).to.eql(\"Untamed\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{libros}}",
+					"host": [
+						"{{Url_Base}}{{libros}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener libro por Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Muestra el nombre del libro buscado por el id\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"Just as I Am\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id buscado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.id).to.eql(2);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el autor del libro Just as I Am\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.author).to.eql(\"Cicely Tyson\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el precio del libro Just as I Am\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.price).to.eql(20.33);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{libros}}/2",
+					"host": [
+						"{{Url_Base}}{{libros}}"
+					],
+					"path": [
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener token para autenticarse",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"UsuarioToken\", \"{{$randomFirtsName}}\");\r",
+							"pm.environment.set(\"EmailUsuarioToken\", \"{{$randomEmail}}\");"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response=pm.response.json();\r",
+							"var TokenObtenido=response.accessToken\r",
+							"pm.environment.set(\"Token\", TokenObtenido);\r",
+							"\r",
+							"pm.test(\"Se registra el usuario de manera exitosa\", function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el Token del usuario registrado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.accessToken);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"clientName\": \"{{UsuarioToken}}\",\r\n   \"clientEmail\": \"{{EmailUsuarioToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{ObtenerToken}}",
+					"host": [
+						"{{Url_Base}}{{ObtenerToken}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener todos los pedidos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Muestra el resultado con todos los pedidos\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra los id de los pedidos\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData)\r",
+							"    pm.expect(jsonData.id);\r",
+							"});\r",
+							"pm.test(\"Muestra los id de los libros\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.bookId);\r",
+							"});\r",
+							"pm.test(\"Muestra el nombre del cliente al que esta vinculado cada pedido\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.customerName);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear pedido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var response=pm.response.json();\r",
+							"var idpedido=response.orderId;\r",
+							"console.log(idpedido)\r",
+							"pm.environment.set(\"IdPedidoCreado\", idpedido);\r",
+							"\r",
+							"pm.test(\"Crea el pedido\", function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra que la creacion del pedido fue exitosa\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.created).to.eql(true);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id del pedido con el que fue creado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.orderId);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cliente\", \"{{$randomFirtsName}}\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"bookId\": 1,\r\n    \"customerName\": \"{{Cliente}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener pedido por id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Muestra el id buscado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.id=\"IdPedidoCreado\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id del libro vinculado con el pedido consultado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.bookId);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el nombre del cliente al que esta vinculado el pedido consultado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.customerName);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/{{IdPedidoCreado}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"{{IdPedidoCreado}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Modificar pedido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Se modifica correctamente el pedido pero este no retorna contenido en el cuerpo de respuesta\", function(){\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"customerName\": \"{{Cliente}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/{{IdPedidoCreado}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"{{IdPedidoCreado}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar pedido",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Elimina el pedido indicado por el Id\", function(){\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/{{IdPedidoCreado}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"{{IdPedidoCreado}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
