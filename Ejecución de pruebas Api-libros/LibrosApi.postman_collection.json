@@ -13,19 +13,22 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra la cantidad de libros\", function(){\r",
+							"pm.test(\"Muestra la cantidad total de libros (6)\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.length).to.eql(6);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el nombre del libro Untamed\", function(){\r",
+							"pm.test(\"Muestra las caracteristicas del libro Untamed (id, nombre, tipo y disponibilidad)\", function(){\r",
 							"    var response=pm.response.json();\r",
-							"    var nombreLibro=response.find(x => x.name == \"Untamed\")\r",
+							"    const nombreLibro=response.find(x => x.id == 5)\r",
+							"    pm.expect(nombreLibro.id).to.eql(5);\r",
 							"    pm.expect(nombreLibro.name).to.eql(\"Untamed\");\r",
+							"    pm.expect(nombreLibro.type).to.eql(\"non-fiction\");\r",
+							"    pm.expect(nombreLibro.available).to.eql(true);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -45,14 +48,45 @@
 			"response": []
 		},
 		{
+			"name": "(no feliz)Obtener todos los libros (se agrega un \"f\" al final de la solicitud)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra como titulo, Error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"Error\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{libros}}f",
+					"host": [
+						"{{Url_Base}}{{libros}}f"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Obtener libro por Id",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Muestra el nombre del libro buscado por el id\", function(){\r",
-							"    pm.expect(pm.response.text()).to.include(\"Just as I Am\");\r",
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el id buscado\", function(){\r",
@@ -60,12 +94,17 @@
 							"    pm.expect(jsonData.id).to.eql(2);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el autor del libro Just as I Am\", function(){\r",
+							"pm.test(\"Muestra el nombre del libro buscado\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.name).to.eql(\"Just as I Am\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el autor del libro buscado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.author).to.eql(\"Cicely Tyson\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el precio del libro Just as I Am\", function(){\r",
+							"pm.test(\"Muestra el precio del libro buscado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.price).to.eql(20.33);\r",
 							"});"
@@ -90,14 +129,53 @@
 			"response": []
 		},
 		{
+			"name": "(no feliz)Obtener libro por Id (se agrega una \"3\" la final de la solicitud)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra porque fallo la solicitud\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.error).to.contain(\"No book with id\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El cuerpo de respuesta muestra un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"error\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{libros}}/23",
+					"host": [
+						"{{Url_Base}}{{libros}}"
+					],
+					"path": [
+						"23"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Obtener token para autenticarse",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.environment.set(\"UsuarioToken\", \"{{$randomFirtsName}}\");\r",
-							"pm.environment.set(\"EmailUsuarioToken\", \"{{$randomEmail}}\");"
+							"pm.environment.set(\"UsuarioToken\",pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+							"pm.environment.set(\"EmailUsuarioToken\", pm.variables.replaceIn('{{$randomEmail}}'));"
 						],
 						"type": "text/javascript"
 					}
@@ -111,12 +189,16 @@
 							"pm.environment.set(\"Token\", TokenObtenido);\r",
 							"\r",
 							"pm.test(\"Se registra el usuario de manera exitosa\", function(){\r",
+							"    pm.response.to.have.status(\"Created\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta es 201\", function(){\r",
 							"    pm.response.to.have.status(201);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el Token del usuario registrado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.accessToken);\r",
+							"    pm.expect(jsonData.accessToken).to.eql(pm.environment.get(\"Token\"));\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -145,28 +227,31 @@
 			"response": []
 		},
 		{
-			"name": "Obtener todos los pedidos",
+			"name": "(no feliz)Obtener token para autenticarse (no se declararon los Pre-request Script)",
 			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Muestra el resultado con todos los pedidos\", function(){\r",
-							"    pm.response.to.have.status(200);\r",
+							"pm.test(\"La solicitud entra en conflicto porque el usuario ya esta registrado y ya tiene un token asignado\", function(){\r",
+							"    pm.response.to.have.status(\"Conflict\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra los id de los pedidos\", function(){\r",
-							"    var jsonData = pm.response.json();\r",
-							"    console.log(jsonData)\r",
-							"    pm.expect(jsonData.id);\r",
+							"pm.test(\"El codigo de respuesta es 409\", function(){\r",
+							"    pm.response.to.have.status(409);\r",
 							"});\r",
-							"pm.test(\"Muestra los id de los libros\", function(){\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.bookId);\r",
-							"});\r",
-							"pm.test(\"Muestra el nombre del cliente al que esta vinculado cada pedido\", function(){\r",
-							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.customerName);\r",
+							"\r",
+							"pm.test(\"El cuerpo de la respuesta muestra el error\", function () {\r",
+							"    pm.expect(pm.response.text()).to.include(\"error\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -174,22 +259,21 @@
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{Token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"clientName\": \"{{UsuarioToken}}\",\r\n   \"clientEmail\": \"{{EmailUsuarioToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "{{Url_Base}}{{pedido}}",
+					"raw": "{{Url_Base}}{{ObtenerToken}}",
 					"host": [
-						"{{Url_Base}}{{pedido}}"
+						"{{Url_Base}}{{ObtenerToken}}"
 					]
 				}
 			},
@@ -204,21 +288,28 @@
 						"exec": [
 							"var response=pm.response.json();\r",
 							"var idpedido=response.orderId;\r",
-							"console.log(idpedido)\r",
 							"pm.environment.set(\"IdPedidoCreado\", idpedido);\r",
 							"\r",
-							"pm.test(\"Crea el pedido\", function(){\r",
+							"var jsonData = pm.response;\r",
+							"var fecha = jsonData.headers.find(x => x.key = \"Date\").value\r",
+							"pm.environment.set(\"fechaPedidoCreado\", fecha);\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta es 201\", function(){\r",
 							"    pm.response.to.have.status(201);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra que la creacion del pedido fue exitosa\", function(){\r",
+							"pm.test(\"Crea el pedido\", function(){\r",
+							"    pm.response.to.have.status(\"Created\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El cuerpo de respuesta muestra que la creacion del pedido fue exitosa\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData.created).to.eql(true);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el id del pedido con el que fue creado\", function(){\r",
+							"pm.test(\"El cuerpo de respuesta muestra el id del pedido con el que fue creado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.orderId);\r",
+							"    pm.expect(jsonData.orderId).to.eql(pm.environment.get(\"IdPedidoCreado\"));\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -228,7 +319,7 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.environment.set(\"Cliente\", \"{{$randomFirtsName}}\");"
+							"pm.environment.set(\"Cliente\",pm.variables.replaceIn('{{$randomFirstName}}'));"
 						],
 						"type": "text/javascript"
 					}
@@ -266,25 +357,195 @@
 			"response": []
 		},
 		{
+			"name": "(no feliz)Crear pedido (no se agrega contenido al body)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 400 (no se crea el pedido)\", function(){\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La solicitud no se puede cumplir debido a una mala sintaxis\", function(){\r",
+							"    pm.response.to.have.status(\"Bad Request\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra que la creación del pedido tiene un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"error\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra porque ocurre el error\", function(){\r",
+							"    var jsonDate = pm.response.json();\r",
+							"    pm.expect(jsonDate.error).to.include(\"Invalid or missing bookId.\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener todos los pedidos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El tiempo de respuesta es menor a 300ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta contiene la solicitud\", function(){\r",
+							"    pm.expect(pm.response.json()).to.be.not.empty;\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(no feliz)Obtener todos los pedidos (se agrega un \"+\" la final de la solicitud)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El cuerpo de respuesta muestra un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"Error\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}+",
+					"host": [
+						"{{Url_Base}}{{pedido}}+"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Obtener pedido por id",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Muestra el id buscado\", function(){\r",
+							"pm.test(\"el codigo de respuesta es 200\", function(){\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el id del pedido buscado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.id=\"IdPedidoCreado\");\r",
+							"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"IdPedidoCreado\"));\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el id del libro vinculado con el pedido consultado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.bookId);\r",
+							"    pm.expect(jsonData.bookId).to.eql(1);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el nombre del cliente al que esta vinculado el pedido consultado\", function(){\r",
 							"    var jsonData = pm.response.json();\r",
-							"    pm.expect(jsonData.customerName);\r",
+							"    pm.expect(jsonData.customerName).to.eql(pm.environment.get(\"Cliente\"));\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -317,15 +578,87 @@
 			"response": []
 		},
 		{
+			"name": "(no feliz)Obtener pedido por id (no existe el id del pedido)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 404 \", function(){\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta muestra que el recurso buscado no existe\", function(){\r",
+							"    pm.response.to.have.status(\"Not Found\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta muestra error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"error\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra porque ocurre el error\", function(){\r",
+							"    var jsonDate = pm.response.json();\r",
+							"    pm.expect(jsonDate.error).to.include(\"No order with id\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/fugkc3465f",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"fugkc3465f"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Modificar pedido",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Se modifica correctamente el pedido pero este no retorna contenido en el cuerpo de respuesta\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 204\", function(){\r",
 							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta muestra resultado exitoso pero sin retorno de algun dato\", function(){\r",
+							"    pm.response.to.have.status(\"No Content\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El cuerpo de la solicitud muestra el nuevo nombre del cliente\", function () {\r",
+							"    var jsonData = pm.request;\r",
+							"    var nombreNuevo = jsonData.body.raw;\r",
+							"    pm.expect(nombreNuevo).to.include(pm.environment.get(\"Cliente\"));\r",
 							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cliente\",pm.variables.replaceIn('{{$randomFirstName}}'));"
 						],
 						"type": "text/javascript"
 					}
@@ -366,14 +699,89 @@
 			"response": []
 		},
 		{
+			"name": "(no feliz)Modificar pedido (no se agrega el token de autorización)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 401 (no se crea el pedido)\", function(){\r",
+							"    pm.response.to.have.status(401);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta muestra que no se tiene autorización\", function(){\r",
+							"    pm.response.to.have.status(\"Unauthorized\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra que la creación del pedido tiene un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"error\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra porque ocurre el error\", function(){\r",
+							"    var jsonDate = pm.response.json();\r",
+							"    pm.expect(jsonDate.error).to.include(\"Missing Authorization header.\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set(\"Cliente\",pm.variables.replaceIn('{{$randomFirstName}}'));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"customerName\": \"{{Cliente}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/{{IdPedidoCreado}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"{{IdPedidoCreado}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Eliminar pedido",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Elimina el pedido indicado por el Id\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 204\", function(){\r",
 							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Elimina el pedido por el ultimo id de pedido creado\", function(){\r",
+							"    pm.response.to.have.status(\"No Content\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -387,6 +795,68 @@
 						{
 							"key": "token",
 							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Url_Base}}{{pedido}}/{{IdPedidoCreado}}",
+					"host": [
+						"{{Url_Base}}{{pedido}}"
+					],
+					"path": [
+						"{{IdPedidoCreado}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(no feliz)Eliminar pedido (se ingresa un token que no existe)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El codigo de respuesta es 401 \", function(){\r",
+							"    pm.response.to.have.status(401);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El codigo de respuesta muestra que no se tiene autorización \", function(){\r",
+							"    pm.response.to.have.status(\"Unauthorized\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta muestra error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"error\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra porque ocurre el error\", function(){\r",
+							"    var jsonDate = pm.response.json();\r",
+							"    pm.expect(jsonDate.error).to.include(\"Invalid bearer token.\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "desgfdcfgf",
 							"type": "string"
 						}
 					]

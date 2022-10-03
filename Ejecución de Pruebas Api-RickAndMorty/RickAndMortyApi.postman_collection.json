@@ -17,26 +17,30 @@
 							"var idRickObtenido=response.results.find(x => x.id == 1)\r",
 							"pm.environment.set(\"IdRick\", idRickObtenido.id);\r",
 							"\r",
-							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"var response=pm.response.json();\r",
+							"var resultadoTotal=response.info.count\r",
+							"pm.environment.set(\"totalPersonajes\", resultadoTotal);\r",
+							"\r",
+							"var response=pm.response.json();\r",
+							"var paginas=response.info.pages\r",
+							"pm.environment.set(\"totalPaginas\", paginas);\r",
+							"\r",
+							"pm.test(\"el codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el total de paginas de la consulta\", function(){\r",
-							"    var response=pm.response.json();\r",
-							"    var paginas=response.info.pages\r",
-							"    pm.environment.set(\"totalPaginas\", paginas);\r",
-							"    pm.expect(paginas).to.eql(42);\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.info.pages).to.eql(pm.environment.get(\"totalPaginas\"));\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el total de personajes de la consulta\", function(){\r",
-							"    var response=pm.response.json();\r",
-							"    var resultadoTotal=response.info.count\r",
-							"    pm.environment.set(\"totalPersonajes\", resultadoTotal);\r",
-							"    pm.expect(resultadoTotal).to.eql(826);\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.info.count).to.eql(pm.environment.get(\"totalPersonajes\"));\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el id del personaje Rick\", function(){\r",
-							"    pm.expect(idRickObtenido.id).to.eql(1);\r",
+							"    pm.expect(pm.environment.get(\"IdRick\")).to.eql(1);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el nombre del personaje Rick\", function(){\r",
@@ -52,7 +56,8 @@
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el origen del personaje Rick\", function(){\r",
-							"    pm.expect(pm.response.text()).to.include(\"Earth (C-137)\");\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.results.find(x => x.id == 1).origin.name).to.eql(\"Earth (C-137)\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -86,16 +91,16 @@
 							"var pagina=response.info.next\r",
 							"pm.environment.set(\"paginaSiguiente\", pagina);\r",
 							"\r",
-							"pm.test(\"el cuerpo de la respuesta contiene resultados\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"La pagina siguiente es la #2\", function(){\r",
-							"    pm.expect(pagina).to.contain(\"https://rickandmortyapi.com/api/character?page=2\")\r",
+							"    pm.expect(pm.environment.get(\"paginaSiguiente\")).to.eql(\"https://rickandmortyapi.com/api/character?page=2\");\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el id del personaje Morty\", function(){\r",
-							"    pm.expect(idMortyObtenido.id).to.eql(2);\r",
+							"    pm.expect(pm.environment.get(\"IdMorty\")).to.eql(2);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Muestra el nombre del personaje Morty\", function(){\r",
@@ -110,8 +115,10 @@
 							"    pm.expect(idMortyObtenido.gender).to.eql(\"Male\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el origen del personaje Morty\", function(){\r",
-							"    pm.expect(pm.response.text()).to.include(\"Earth (C-137)\");\r",
+							"pm.test(\"Muestra que el origen del personaje Morty es desconocido\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    console.log(jsonData)\r",
+							"    pm.expect(jsonData.results.find(x => x.id == 2).origin.name).to.eql(\"unknown\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -143,33 +150,38 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"la respuesta contiene datos\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el nombre del personaje\", function(){\r",
+							"pm.test(\"Muestra el nombre del personaje Rick\", function(){\r",
 							"    var jasonDate=pm.response.json();\r",
 							"    pm.expect(jasonDate.name).to.eql(\"Rick Sanchez\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el estado del personaje\", function(){\r",
+							"pm.test(\"Muestra el estado del personaje Rick\", function(){\r",
 							"    var jasonDate=pm.response.json();\r",
 							"    pm.expect(jasonDate.status).to.eql(\"Alive\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra la especie del personaje\", function(){\r",
+							"pm.test(\"Muestra la especie del personaje Rick\", function(){\r",
 							"    var jasonDate=pm.response.json();\r",
 							"    pm.expect(jasonDate.species).to.eql(\"Human\");\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el tipo de personaje\", function(){\r",
+							"pm.test(\"Muestra que el tipo del personaje Rick esta vacio\", function(){\r",
 							"    var jasonDate=pm.response.json();\r",
-							"    pm.expect(jasonDate.type).to.eql(\"\");\r",
+							"    pm.expect(jasonDate.type).to.be.empty;\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Muestra el género del personaje\", function(){\r",
+							"pm.test(\"Muestra el género del personaje Rick\", function(){\r",
 							"    var jasonDate=pm.response.json();\r",
 							"    pm.expect(jasonDate.gender).to.eql(\"Male\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Muestra el origen del personaje Rick\", function(){\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.origin.name).to.eql(\"Earth (C-137)\");\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -198,9 +210,16 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"el cuerpo de la respuesta contiene un array vacio\", function(){\r",
+							"pm.test(\"el codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
-							"    pm.expect(pm.response.text()).to.include([]);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta contiene un array vacio\", function(){\r",
+							"    pm.expect(pm.response.json()).to.be.empty;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El tiempo de respuesta es inferior a 250ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(250);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -229,7 +248,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"La respuesta contiene datos\", function(){\r",
+							"pm.test(\"El codigo de respuesta es 200\", function(){\r",
 							"    pm.response.to.have.status(200);\r",
 							"});\r",
 							"\r",
@@ -267,6 +286,78 @@
 					],
 					"path": [
 						"{{IdRick}},{{IdMorty}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(no feliz)Obtener todos los personajes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"el codigo de respuesta es 404\", function(){\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta arroja un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.include(\"error\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}})",
+					"host": [
+						"{{Url_Base}}{{Personajes}})"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "(no feliz)Busqueda por pagina",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"El recurso buscado no existe\", function(){\r",
+							"    pm.response.to.have.status(\"Not Found\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta arroja un error\", function(){\r",
+							"    pm.expect(pm.response.text()).to.contain(\"error\");\r",
+							"});\r",
+							"\r",
+							"pm.test(\"el cuerpo de la respuesta no esta mostrando resultados de busqueda\", function(){\r",
+							"    pm.expect(pm.response.text()).to.not.include(\"results\");\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{Url_Base}}{{Personajes}}?page=43",
+					"host": [
+						"{{Url_Base}}{{Personajes}}"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "43"
+						}
 					]
 				}
 			},
